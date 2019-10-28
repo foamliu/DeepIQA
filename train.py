@@ -1,12 +1,13 @@
 import numpy as np
 import torch
 from torch import nn
+from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.tensorboard import SummaryWriter
 
 from config import device, grad_clip, print_freq, num_workers, num_classes
 from data_gen import DeepIQADataset
 from mobilenet_v2 import MobileNetV2
-from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, accuracy, get_learning_rate
+from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, get_learning_rate
 
 
 def train_net(args):
@@ -20,7 +21,6 @@ def train_net(args):
 
     # Initialize / load checkpoint
     if checkpoint is None:
-        # model = ImgClsModel()
         model = MobileNetV2(num_classes=num_classes)
         model = nn.DataParallel(model)
 
@@ -39,7 +39,7 @@ def train_net(args):
     model = model.to(device)
 
     # Loss function
-    criterion = nn.CrossEntropyLoss().to(device)
+    criterion = nn.L1Loss().to(device)
 
     # Custom dataloaders
     train_dataset = DeepIQADataset('train')
@@ -49,7 +49,7 @@ def train_net(args):
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False,
                                                num_workers=num_workers)
 
-    # scheduler = StepLR(optimizer, step_size=args.lr_step, gamma=0.1)
+    scheduler = MultiStepLR(optimizer, milestones=[30, 80], gamma=0.1)
 
     # Epochs
     for epoch in range(start_epoch, args.end_epoch):
@@ -92,12 +92,13 @@ def train_net(args):
         # Save checkpoint
         save_checkpoint(epoch, epochs_since_improvement, model, optimizer, best_acc, is_best)
 
+        scheduler.step(epoch)
+
 
 def train(train_loader, model, criterion, optimizer, epoch, logger):
     model.train()  # train mode (dropout and batchnorm is used)
 
     losses = AverageMeter('Loss', ':.5f')
-    accs = AverageMeter('Acc', ':.5f')
 
     # Batches
     for i, (img, label) in enumerate(train_loader):
@@ -110,7 +111,6 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
 
         # Calculate loss
         loss = criterion(out, label)
-        acc = accuracy(out, label)
 
         # Back prop.
         optimizer.zero_grad()
@@ -124,27 +124,23 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
 
         # Keep track of metrics
         losses.update(loss.item())
-        accs.update(acc)
 
         # Print status
         if i % print_freq == 0:
             status = 'Epoch: [{0}][{1}/{2}]\t' \
-                     'Loss {loss.val:.5f} ({loss.avg:.5f})\t' \
-                     'Accuracy {acc.val:.5f} ({acc.avg:.5f})\t'.format(epoch, i,
-                                                                       len(train_loader),
-                                                                       loss=losses,
-                                                                       acc=accs,
-                                                                       )
+                     'Loss {loss.val:.5f} ({loss.avg:.5f})\t'.format(epoch, i,
+                                                                     len(train_loader),
+                                                                     loss=losses,
+                                                                     )
             logger.info(status)
 
-    return losses.avg, accs.avg
+    return losses.avg
 
 
 def valid(valid_loader, model, criterion, logger):
     model.eval()  # eval mode (dropout and batchnorm is NOT used)
 
     losses = AverageMeter('Loss', ':.5f')
-    accs = AverageMeter('Acc', ':.5f')
 
     # Batches
     for i, (img, label) in enumerate(valid_loader):
@@ -157,17 +153,15 @@ def valid(valid_loader, model, criterion, logger):
 
         # Calculate loss
         loss = criterion(out, label)
-        acc = accuracy(out, label)
 
         # Keep track of metrics
         losses.update(loss.item())
-        accs.update(acc)
 
     # Print status
-    status = 'Validation\t Loss {loss.avg:.5f}\t Accuracy {acc.avg:.5f}\n'.format(loss=losses, acc=accs)
+    status = 'Validation\t Loss {loss.avg:.5f}\n'.format(loss=losses)
     logger.info(status)
 
-    return losses.avg, accs.avg
+    return losses.avg
 
 
 def main():

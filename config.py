@@ -8,7 +8,7 @@ num_classes = 1
 num_samples = 10073
 num_train = 9073
 num_valid = 1000
-image_folder = 'data'
+image_folder = 'data/224x224'
 anno_file = 'data/koniq10k_scores_and_distributions.csv'
 
 # Training parameters

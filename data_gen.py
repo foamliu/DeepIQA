@@ -1,8 +1,11 @@
 import json
+import os
 
 import cv2 as cv
 from torch.utils.data import Dataset
 from torchvision import transforms
+
+from config import image_folder
 
 # Data augmentation and normalization for training
 # Just normalization for validation
@@ -33,6 +36,7 @@ class DeepIQADataset(Dataset):
     def __getitem__(self, i):
         sample = self.samples[i]
         image_name = sample['image_name']
+        full_path = os.path.join(image_folder, image_name)
         label = sample['label']
         img = cv.imread(full_path)
 
