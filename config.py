@@ -5,7 +5,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # sets de
 im_size = 224
 num_classes = 1
 
-train_ratio = 0.9
+num_samples = 10073
+num_train = 9073
+num_valid = 1000
 image_folder = 'data'
 anno_file = 'data/koniq10k_scores_and_distributions.csv'
 

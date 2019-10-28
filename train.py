@@ -4,8 +4,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from config import device, grad_clip, print_freq, num_workers, num_classes
-from data_gen import ImgClsDataset
-# from models import ImgClsModel
+from data_gen import DeepIQADataset
 from mobilenet_v2 import MobileNetV2
 from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, accuracy, get_learning_rate
 
@@ -43,10 +42,10 @@ def train_net(args):
     criterion = nn.CrossEntropyLoss().to(device)
 
     # Custom dataloaders
-    train_dataset = ImgClsDataset('train')
+    train_dataset = DeepIQADataset('train')
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
                                                num_workers=num_workers)
-    valid_dataset = ImgClsDataset('valid')
+    valid_dataset = DeepIQADataset('valid')
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False,
                                                num_workers=num_workers)
 

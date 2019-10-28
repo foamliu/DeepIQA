@@ -5,7 +5,7 @@ import torch
 from torch import nn
 
 from config import num_workers
-from data_gen import ImgClsDataset
+from data_gen import DeepIQADataset
 from utils import AverageMeter, load_model
 
 
@@ -61,9 +61,9 @@ def evaluate(model, criterion, data_loader, neval_batches):
 
 
 def prepare_data_loaders():
-    train_dataset = ImgClsDataset('train')
+    train_dataset = DeepIQADataset('train')
     print('num_train: {}'.format(len(train_dataset)))
-    valid_dataset = ImgClsDataset('valid')
+    valid_dataset = DeepIQADataset('valid')
     print('num_valid: {}'.format(len(valid_dataset)))
 
     data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=30, shuffle=True,

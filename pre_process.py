@@ -1,27 +1,26 @@
 import json
-import os
 
-from config import image_folder, train_ratio
+from config import num_train, anno_file
 
 if __name__ == "__main__":
-    dirs = [d for d in os.listdir(image_folder) if os.path.isdir(os.path.join(image_folder, d))]
+    with open(anno_file, 'r') as f:
+        lines = f.readlines()
 
     train = []
     valid = []
 
-    for d in dirs:
-        dir_path = os.path.join(image_folder, d)
+    for i, line in enumerate(lines[1:]):
+        tokens = line.split(',')
+        image_name = tokens[0].strip().replace('"', '')
+        MOS = float(tokens[7].strip())
 
-        files = [f for f in os.listdir(dir_path) if f.endswith('.jpg')]
-        num_files = len(files)
-        num_train = int(num_files * train_ratio)
+        if i < num_train:
+            train.append({'image_name': image_name, 'label': MOS})
+        else:
+            valid.append({'image_name': image_name, 'label': MOS})
 
-        for i, file in enumerate(files):
-            img_path = os.path.join(dir_path, file).replace('\\', '/')
-            if i <= num_train:
-                train.append({'img_path': img_path, 'label': int(d)})
-            else:
-                valid.append({'img_path': img_path, 'label': int(d)})
+    print('num_train: ' + str(len(train)))
+    print('num_valid: ' + str(len(valid)))
 
     with open('train.json', 'w') as file:
         json.dump(train, file, indent=4)

@@ -8,7 +8,7 @@ from sklearn.utils.multiclass import unique_labels
 from tqdm import tqdm
 
 from config import num_workers
-from data_gen import ImgClsDataset
+from data_gen import DeepIQADataset
 from utils import parse_args, AverageMeter, accuracy
 
 classes = np.array(['Lou Yu', 'Kuang Jia'])
@@ -80,7 +80,7 @@ def test():
     model.eval()
 
     args = parse_args()
-    valid_dataset = ImgClsDataset('valid')
+    valid_dataset = DeepIQADataset('valid')
     num_samples = len(valid_dataset)
     print('num_samples: {}'.format(num_samples))
 
