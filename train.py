@@ -80,7 +80,7 @@ def train_net(args):
 
         # Check if there was an improvement
         is_best = valid_loss < best_loss
-        best_acc = min(valid_loss, best_loss)
+        best_loss = min(valid_loss, best_loss)
         if not is_best:
             epochs_since_improvement += 1
             print("\nEpochs since last improvement: %d\n" % (epochs_since_improvement,))
