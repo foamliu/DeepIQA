@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from config import device, grad_clip, print_freq, num_workers
 from data_gen import DeepIQADataset
 from mobilenet_v2 import MobileNetv2
-from models import ImgClsModel
+from models import DeepIQAModel
 from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, accuracy, get_learning_rate
 
 
@@ -186,7 +186,7 @@ def main():
 
     checkpoint = 'image_classification.pt'
     print('loading model: {}...'.format(checkpoint))
-    teacher_model = ImgClsModel()
+    teacher_model = DeepIQAModel()
     teacher_model.load_state_dict(torch.load(checkpoint))
     teacher_model = teacher_model.to(device)
     teacher_model.eval()
