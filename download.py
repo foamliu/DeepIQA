@@ -1,6 +1,8 @@
 import pickle
 from subprocess import Popen, PIPE
 
+from tqdm import tqdm
+
 filename = 'data/photo.csv'
 
 if __name__ == '__main__':
@@ -8,7 +10,7 @@ if __name__ == '__main__':
         lines = f.readlines()
 
     samples = []
-    for i, line in enumerate(lines[1:]):
+    for line in tqdm(lines[1:]):
         tokens = line.split(',')
         before_file = tokens[0].strip()
         after_file = tokens[1].strip()
