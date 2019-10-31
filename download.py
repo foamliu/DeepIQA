@@ -5,6 +5,7 @@ from subprocess import Popen, PIPE
 from tqdm import tqdm
 
 filename = 'data/photo.csv'
+folder = 'data/photo'
 
 if __name__ == '__main__':
     with open(filename, 'r') as f:
@@ -15,8 +16,6 @@ if __name__ == '__main__':
         tokens = line.split(',')
         before_file = tokens[0].strip()
         after_file = tokens[1].strip()
-
-        folder = 'data/photo'
 
         before_filename = before_file[before_file.rfind("/") + 1:]
         before_filename = os.path.join(folder, before_filename)
