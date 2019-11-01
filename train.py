@@ -40,7 +40,7 @@ def train_net(args):
     model = model.to(device)
 
     # Loss function
-    criterion = nn.MarginRankingLoss(margin=0.1).to(device)
+    criterion = nn.MarginRankingLoss(margin=0.2).to(device)
 
     # Custom dataloaders
     train_dataset = DeepIQADataset('train')
