@@ -124,8 +124,7 @@ class MobileNetV2(nn.Module):
         # building classifier
         self.classifier = nn.Sequential(
             nn.Dropout(0.2),
-            nn.Linear(self.last_channel, 1),
-            nn.Sigmoid()
+            nn.Linear(self.last_channel, 1)
         )
 
         # weight initialization

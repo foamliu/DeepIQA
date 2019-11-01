@@ -40,7 +40,7 @@ def train_net(args):
     model = model.to(device)
 
     # Loss function
-    criterion = nn.MarginRankingLoss(margin=0.2).to(device)
+    criterion = nn.MarginRankingLoss(margin=1.0).to(device)
 
     # Custom dataloaders
     train_dataset = DeepIQADataset('train')
@@ -141,16 +141,18 @@ def valid(valid_loader, model, criterion, logger):
     losses = AverageMeter('Loss', ':.5f')
 
     # Batches
-    for i, (img, label) in enumerate(valid_loader):
+    for i, (img_0, img_1, target) in enumerate(valid_loader):
         # Move to GPU, if available
-        img = img.to(device)  # [N, 3, 224, 224]
-        label = label.float().to(device)  # [N, 3]
+        img_0 = img_0.to(device)
+        img_1 = img_1.to(device)
+        target = target.to(device)
 
         # Forward prop.
-        out = model(img)
+        x1 = model(img_0)
+        x2 = model(img_1)
 
         # Calculate loss
-        loss = criterion(out, label)
+        loss = criterion(x1, x2, target)
 
         # Keep track of metrics
         losses.update(loss.item())
