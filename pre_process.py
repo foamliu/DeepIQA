@@ -1,23 +1,22 @@
 import json
+import pickle
 
-from config import num_train, anno_file
+from config import num_train, data_file
 
 if __name__ == "__main__":
-    with open(anno_file, 'r') as f:
-        lines = f.readlines()
+    with open(data_file, 'rb') as f:
+        samples = pickle.load(f)
 
     train = []
     valid = []
 
-    for i, line in enumerate(lines[1:]):
-        tokens = line.split(',')
-        image_name = tokens[0].strip().replace('"', '')
-        MOS = float(tokens[7].strip())
-
+    for i, sample in enumerate(samples):
+        before = sample['before']
+        after = sample['after']
         if i < num_train:
-            train.append({'image_name': image_name, 'label': MOS})
+            train.append({'before': before, 'after': after})
         else:
-            valid.append({'image_name': image_name, 'label': MOS})
+            valid.append({'before': before, 'after': after})
 
     print('num_train: ' + str(len(train)))
     print('num_valid: ' + str(len(valid)))
