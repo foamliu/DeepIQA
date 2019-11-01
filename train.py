@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch import nn
-from torch.optim.lr_scheduler import MultiStepLR
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
 
 from config import device, grad_clip, print_freq, num_workers
@@ -50,14 +50,10 @@ def train_net(args):
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False,
                                                num_workers=num_workers)
 
-    scheduler = MultiStepLR(optimizer, milestones=[30, 80], gamma=0.1)
+    scheduler = StepLR(optimizer, step_size=args.lr_step, gamma=0.1)
 
     # Epochs
     for epoch in range(start_epoch, args.end_epoch):
-        # Decay learning rate if there is no improvement for 10 consecutive epochs
-        # if epochs_since_improvement > 0 and epochs_since_improvement % 8 == 0:
-        #     adjust_learning_rate(optimizer, 0.1)
-
         # One epoch's training
         train_loss = train(train_loader=train_loader,
                            model=model,
