@@ -4,10 +4,9 @@ from torch import nn
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.tensorboard import SummaryWriter
 
-from config import device, grad_clip, print_freq, num_workers, num_classes
+from config import device, grad_clip, print_freq, num_workers
 from data_gen import DeepIQADataset
-# from mobilenet_v2 import MobileNetV2
-from models import DeepIQAModel
+from mobilenet_v2 import MobileNetV2
 from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, get_learning_rate
 
 
@@ -23,7 +22,7 @@ def train_net(args):
     # Initialize / load checkpoint
     if checkpoint is None:
         # model = MobileNetV2(num_classes=num_classes)
-        model = DeepIQAModel()
+        model = MobileNetV2()
         model = nn.DataParallel(model)
 
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -41,7 +40,7 @@ def train_net(args):
     model = model.to(device)
 
     # Loss function
-    criterion = nn.L1Loss().to(device)
+    criterion = nn.MarginRankingLoss(margin=1.0).to(device)
 
     # Custom dataloaders
     train_dataset = DeepIQADataset('train')
@@ -101,16 +100,18 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
     losses = AverageMeter('Loss', ':.5f')
 
     # Batches
-    for i, (img, label) in enumerate(train_loader):
+    for i, (img_0, img_1, target) in enumerate(train_loader):
         # Move to GPU, if available
-        img = img.to(device)  # [N, 3, 224, 224]
-        label = label.float().to(device)  # [N, 3]
+        img_0 = img_0.to(device)
+        img_1 = img_1.to(device)
+        target = target.to(device)
 
         # Forward prop.
-        out = model(img)
+        x1 = model(img_0)
+        x2 = model(img_1)
 
         # Calculate loss
-        loss = criterion(out, label)
+        loss = criterion(x1, x2, target)
 
         # Back prop.
         optimizer.zero_grad()
