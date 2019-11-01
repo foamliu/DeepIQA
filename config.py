@@ -16,5 +16,5 @@ data_file = 'data/data.pkl'
 # Training parameters
 num_workers = 8  # for data-loading
 grad_clip = 5.  # clip gradients at an absolute value of
-print_freq = 10  # print training/validation stats  every __ batches
+print_freq = 100  # print training/validation stats  every __ batches
 checkpoint = None  # path to checkpoint, None if none
