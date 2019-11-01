@@ -8,8 +8,10 @@ num_classes = 1
 num_samples = 10073
 num_train = 9073
 num_valid = 1000
-image_folder = 'data/224x224'
+image_folder = 'data/photo'
 anno_file = 'data/koniq10k_scores_and_distributions.csv'
+data_file = 'data/data.pkl'
+
 
 # Training parameters
 num_workers = 4  # for data-loading

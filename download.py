@@ -4,6 +4,8 @@ from subprocess import Popen, PIPE
 
 from tqdm import tqdm
 
+from config import data_file
+
 filename = 'data/photo.csv'
 folder = 'data/photo'
 
@@ -33,5 +35,5 @@ if __name__ == '__main__':
 
         samples.append({'before': before_filename, 'after': after_filename})
 
-        with open('data.pkl', 'wb') as f:
+        with open(data_file, 'wb') as f:
             pickle.dump(samples, f)
