@@ -6,7 +6,7 @@ import os
 
 if __name__ == "__main__":
     with open(data_file, 'rb') as f:
-        samples = pickle.load(data_file)
+        samples = pickle.load(f)
 
     for sample in tqdm(samples):
         before = sample['before']
