@@ -38,23 +38,15 @@ class DeepIQADataset(Dataset):
 
     def __getitem__(self, i):
         sample = self.samples[i]
-        before = sample['before']
-        full_path = os.path.join(image_folder, before)
-        img_0 = cv.imread(full_path)
-        img_0 = img_0[..., ::-1]  # RGB
-        img_0 = transforms.ToPILImage()(img_0)
-        img_0 = self.transformer(img_0)
+        img = sample['img']
+        img = os.path.join(image_folder, img)
+        img = cv.imread(img)
+        img = img[..., ::-1]  # RGB
+        img = transforms.ToPILImage()(img)
+        img = self.transformer(img)
 
-        after = sample['after']
-        full_path = os.path.join(image_folder, after)
-        img_1 = cv.imread(full_path)
-        img_1 = img_1[..., ::-1]  # RGB
-        img_1 = transforms.ToPILImage()(img_1)
-        img_1 = self.transformer(img_1)
-
-        target = -1  # the second input should be ranked higher
-
-        return img_0, img_1, target
+        label = sample['label']
+        return img, label
 
     def __len__(self):
         return len(self.samples)

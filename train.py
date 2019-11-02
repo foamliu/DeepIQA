@@ -40,7 +40,7 @@ def train_net(args):
     model = model.to(device)
 
     # Loss function
-    criterion = nn.MarginRankingLoss(margin=0.2).to(device)
+    criterion = nn.CrossEntropyLoss().to(device)
 
     # Custom dataloaders
     train_dataset = DeepIQADataset('train')
@@ -97,18 +97,16 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
     losses = AverageMeter('Loss', ':.5f')
 
     # Batches
-    for i, (img_0, img_1, target) in enumerate(train_loader):
+    for i, (img, label) in enumerate(train_loader):
         # Move to GPU, if available
-        img_0 = img_0.to(device)
-        img_1 = img_1.to(device)
-        target = target.to(device)
+        img = img.to(device)
+        label = img.to(label)
 
         # Forward prop.
-        x1 = model(img_0)
-        x2 = model(img_1)
+        out = model(img)
 
         # Calculate loss
-        loss = criterion(x1, x2, target)
+        loss = criterion(out, label)
 
         # Back prop.
         optimizer.zero_grad()
@@ -141,18 +139,16 @@ def valid(valid_loader, model, criterion, logger):
     losses = AverageMeter('Loss', ':.5f')
 
     # Batches
-    for i, (img_0, img_1, target) in enumerate(valid_loader):
+    for i, (img, label) in enumerate(valid_loader):
         # Move to GPU, if available
-        img_0 = img_0.to(device)
-        img_1 = img_1.to(device)
-        target = target.to(device)
+        img = img.to(device)
+        label = img.to(label)
 
         # Forward prop.
-        x1 = model(img_0)
-        x2 = model(img_1)
+        out = model(img)
 
         # Calculate loss
-        loss = criterion(x1, x2, target)
+        loss = criterion(out, label)
 
         # Keep track of metrics
         losses.update(loss.item())
