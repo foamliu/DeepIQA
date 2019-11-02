@@ -14,11 +14,11 @@ if __name__ == "__main__":
         before = sample['before']
         after = sample['after']
         if i < num_train:
-            train.append({'img': before, 'label': 0})
-            train.append({'img': after, 'label': 1})
+            train.append({'img_path': before, 'label': 0})
+            train.append({'img_path': after, 'label': 1})
         else:
-            valid.append({'img': before, 'label': 0})
-            valid.append({'img': after, 'label': 1})
+            valid.append({'img_path': before, 'label': 0})
+            valid.append({'img_path': after, 'label': 1})
 
     print('num_train: ' + str(len(train)))
     print('num_valid: ' + str(len(valid)))
