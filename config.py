@@ -8,7 +8,8 @@ num_classes = 1
 num_samples = 90679
 num_train = 89679
 num_valid = 1000
-image_folder = 'data/photo'
+# image_folder = 'data/photo'
+image_folder = 'data/256x256'
 anno_file = 'data/koniq10k_scores_and_distributions.csv'
 data_file = 'data/data.pkl'
 
