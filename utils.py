@@ -19,10 +19,10 @@ def clip_gradient(optimizer, grad_clip):
                 param.grad.data.clamp_(-grad_clip, grad_clip)
 
 
-def save_checkpoint(epoch, epochs_since_improvement, model, optimizer, loss, is_best):
+def save_checkpoint(epoch, epochs_since_improvement, model, optimizer, acc, is_best):
     state = {'epoch': epoch,
              'epochs_since_improvement': epochs_since_improvement,
-             'loss': loss,
+             'acc': acc,
              'model': model,
              'optimizer': optimizer}
     # filename = 'checkpoint_' + str(epoch) + '_' + str(loss) + '.tar'
@@ -34,11 +34,11 @@ def save_checkpoint(epoch, epochs_since_improvement, model, optimizer, loss, is_
 
 
 class AverageMeter(object):
-    """Computes and stores the average and current value"""
+    """
+    Keeps track of most recent, average, sum, and count of a metric.
+    """
 
-    def __init__(self, name, fmt=':f'):
-        self.name = name
-        self.fmt = fmt
+    def __init__(self):
         self.reset()
 
     def reset(self):
@@ -52,10 +52,6 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
-
-    def __str__(self):
-        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
-        return fmtstr.format(**self.__dict__)
 
 
 class LossMeterBag(object):

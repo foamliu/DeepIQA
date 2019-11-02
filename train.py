@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from config import device, grad_clip, print_freq, num_workers
 from data_gen import DeepIQADataset
 from mobilenet_v2 import MobileNetV2
-from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, get_learning_rate
+from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, accuracy, get_learning_rate
 
 
 def train_net(args):
@@ -15,7 +15,7 @@ def train_net(args):
     np.random.seed(7)
     checkpoint = args.checkpoint
     start_epoch = 0
-    best_loss = float('inf')
+    best_acc = 0
     writer = SummaryWriter()
     epochs_since_improvement = 0
 
@@ -55,30 +55,32 @@ def train_net(args):
     # Epochs
     for epoch in range(start_epoch, args.end_epoch):
         # One epoch's training
-        train_loss = train(train_loader=train_loader,
-                           model=model,
-                           criterion=criterion,
-                           optimizer=optimizer,
-                           epoch=epoch,
-                           logger=logger)
+        train_loss, train_acc = train(train_loader=train_loader,
+                                      model=model,
+                                      criterion=criterion,
+                                      optimizer=optimizer,
+                                      epoch=epoch,
+                                      logger=logger)
 
         writer.add_scalar('model/train_loss', train_loss, epoch)
+        writer.add_scalar('model/train_accuracy', train_acc, epoch)
 
         lr = get_learning_rate(optimizer)
         writer.add_scalar('model/learning_rate', lr, epoch)
         print('\nCurrent effective learning rate: {}\n'.format(lr))
 
         # One epoch's validation
-        valid_loss = valid(valid_loader=valid_loader,
-                           model=model,
-                           criterion=criterion,
-                           logger=logger)
+        valid_loss, valid_acc = valid(valid_loader=valid_loader,
+                                      model=model,
+                                      criterion=criterion,
+                                      logger=logger)
 
         writer.add_scalar('model/valid_loss', valid_loss, epoch)
+        writer.add_scalar('model/valid_accuracy', valid_acc, epoch)
 
         # Check if there was an improvement
-        is_best = valid_loss < best_loss
-        best_loss = min(valid_loss, best_loss)
+        is_best = valid_acc > best_acc
+        best_acc = max(valid_acc, best_acc)
         if not is_best:
             epochs_since_improvement += 1
             print("\nEpochs since last improvement: %d\n" % (epochs_since_improvement,))
@@ -86,7 +88,7 @@ def train_net(args):
             epochs_since_improvement = 0
 
         # Save checkpoint
-        save_checkpoint(epoch, epochs_since_improvement, model, optimizer, best_loss, is_best)
+        save_checkpoint(epoch, epochs_since_improvement, model, optimizer, best_acc, is_best)
 
         scheduler.step(epoch)
 
@@ -94,7 +96,8 @@ def train_net(args):
 def train(train_loader, model, criterion, optimizer, epoch, logger):
     model.train()  # train mode (dropout and batchnorm is used)
 
-    losses = AverageMeter('Loss', ':.5f')
+    losses = AverageMeter()
+    accs = AverageMeter()
 
     # Batches
     for i, (img, label) in enumerate(train_loader):
@@ -107,6 +110,7 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
 
         # Calculate loss
         loss = criterion(out, label)
+        acc = accuracy(out, label)
 
         # Back prop.
         optimizer.zero_grad()
@@ -120,15 +124,19 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
 
         # Keep track of metrics
         losses.update(loss.item())
+        accs.update(acc)
 
         # Print status
         if i % print_freq == 0:
-            status = 'Epoch: [{0}][{1}/{2}]\t' \
-                     'Loss {loss.val:.5f} ({loss.avg:.5f})\t'.format(epoch, i,
-                                                                     len(train_loader),
-                                                                     loss=losses,
-                                                                     )
-            logger.info(status)
+            if i % print_freq == 0:
+                status = 'Epoch: [{0}][{1}/{2}]\t' \
+                         'Loss {loss.val:.5f} ({loss.avg:.5f})\t' \
+                         'Accuracy {acc.val:.5f} ({acc.avg:.5f})\t'.format(epoch, i,
+                                                                           len(train_loader),
+                                                                           loss=losses,
+                                                                           acc=accs,
+                                                                           )
+                logger.info(status)
 
     return losses.avg
 
@@ -136,7 +144,8 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
 def valid(valid_loader, model, criterion, logger):
     model.eval()  # eval mode (dropout and batchnorm is NOT used)
 
-    losses = AverageMeter('Loss', ':.5f')
+    losses = AverageMeter()
+    accs = AverageMeter()
 
     # Batches
     for i, (img, label) in enumerate(valid_loader):
@@ -149,12 +158,14 @@ def valid(valid_loader, model, criterion, logger):
 
         # Calculate loss
         loss = criterion(out, label)
+        acc = accuracy(out, label)
 
         # Keep track of metrics
         losses.update(loss.item())
+        accs.update(acc)
 
     # Print status
-    status = 'Validation\t Loss {loss.avg:.5f}\n'.format(loss=losses)
+    status = 'Validation\t Loss {loss.avg:.5f}\t Accuracy {acc.avg:.5f}\n'.format(loss=losses, acc=accs)
     logger.info(status)
 
     return losses.avg
