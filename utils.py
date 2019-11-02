@@ -133,3 +133,9 @@ def load_model(model_file):
     model.load_state_dict(state_dict)
     model.to('cpu')
     return model
+
+
+def ensure_folder(folder):
+    import os
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
