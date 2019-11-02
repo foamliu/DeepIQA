@@ -88,7 +88,7 @@ def train_net(args):
         # Save checkpoint
         save_checkpoint(epoch, epochs_since_improvement, model, optimizer, best_loss, is_best)
 
-        scheduler.step(epoch)
+        # scheduler.step(epoch)
 
 
 def train(train_loader, model, criterion, optimizer, epoch, logger):
