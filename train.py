@@ -6,7 +6,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 from config import device, grad_clip, print_freq, num_workers
 from data_gen import DeepIQADataset
-from mobilenet_v2 import MobileNetV2
+# from mobilenet_v2 import MobileNetV2
+from models import DeepIQAModel
 from utils import parse_args, save_checkpoint, AverageMeter, clip_gradient, get_logger, accuracy, get_learning_rate
 
 
@@ -22,7 +23,8 @@ def train_net(args):
     # Initialize / load checkpoint
     if checkpoint is None:
         # model = MobileNetV2(num_classes=num_classes)
-        model = MobileNetV2()
+        # model = MobileNetV2()
+        model = DeepIQAModel()
         model = nn.DataParallel(model)
 
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
