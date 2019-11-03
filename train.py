@@ -103,7 +103,7 @@ def train(train_loader, model, criterion, optimizer, epoch, logger):
     for i, (img, label) in enumerate(train_loader):
         # Move to GPU, if available
         img = img.to(device)
-        label = img.to(device)
+        label = label.to(device)
 
         # Forward prop.
         out = model(img)
@@ -151,7 +151,7 @@ def valid(valid_loader, model, criterion, logger):
     for i, (img, label) in enumerate(valid_loader):
         # Move to GPU, if available
         img = img.to(device)
-        label = img.to(device)
+        label = label.to(device)
 
         # Forward prop.
         out = model(img)
